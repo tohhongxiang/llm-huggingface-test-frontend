@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
+import { cn } from "@/lib/utils";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import Navbar from "@/components/Navbar";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -16,7 +20,19 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en">
-			<body className={inter.className}>{children}</body>
+			<TooltipProvider>
+				<body
+					className={cn(
+						"bg-background font-sans antialiased flex flex-col overflow-hidden",
+						inter.className
+					)}
+				>
+					<Navbar />
+					<main className="flex-1 h-[calc(100vh-74px)]">
+						{children}
+					</main>
+				</body>
+			</TooltipProvider>
 		</html>
 	);
 }
