@@ -1,41 +1,43 @@
 "use client";
 
 import { fetchEventSource } from "@microsoft/fetch-event-source";
-import { useEffect, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import MessageBubble from "@/components/MessageBubble";
-
-interface ChatMessage {
-	role: string;
-	content: string;
-}
-
-function createMessage(role: string, content: string) {
-	return {
-		role,
-		content: content.trim(),
-	};
-}
+import Chat, { ChatMessage, createMessage } from "@/components/chat";
 
 export default function Home() {
-	const [prompt, setPrompt] = useState("");
-	const [messages, setMessages] = useState<ChatMessage[]>([]);
+	const [messages, setMessages] = useState<ChatMessage[]>([
+		{ role: "user", content: "Hello, how are you?" },
+		{ role: "assistant", content: "I'm fine, thanks! How are you?" },
+		{ role: "user", content: "Hello, how are you?" },
+		{ role: "assistant", content: "I'm fine, thanks! How are you?" },
+		{ role: "user", content: "Hello, how are you?" },
+		{ role: "assistant", content: "I'm fine, thanks! How are you?" },
+		{ role: "user", content: "Hello, how are you?" },
+		{ role: "assistant", content: "I'm fine, thanks! How are you?" },
+		{ role: "user", content: "I'm fine as well. Thanks for asking" },
+		{
+			role: "assistant",
+			content:
+				"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
+		},
+		{
+			role: "user",
+			content:
+				"It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for 'lorem ipsum' will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).",
+		},
+	]);
 	const [isLoading, setIsLoading] = useState(false);
-	const [data, setData] = useState("");
+	const [generatedMessage, setGeneratedMessage] = useState("");
 
-	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
-
+	const handleSubmit = async (newMessage: string) => {
 		setIsLoading(true);
 		setMessages((prevMessages) => [
 			...prevMessages,
-			createMessage("user", prompt),
+			createMessage("user", newMessage),
 		]);
-
-		setPrompt("");
 
 		let currentMessage = "";
 		await fetchEventSource(`http://localhost:8000/api/query`, {
@@ -58,7 +60,7 @@ export default function Home() {
 			},
 			onmessage(event) {
 				currentMessage += event.data;
-				setData(currentMessage);
+				setGeneratedMessage(currentMessage);
 			},
 			onclose() {
 				console.log("Connection closed");
@@ -70,7 +72,7 @@ export default function Home() {
 					createMessage("assistant", currentMessage),
 				]);
 
-				setData("");
+				setGeneratedMessage("");
 			},
 			onerror(err) {
 				console.log("There was an error from server", err);
@@ -81,15 +83,6 @@ export default function Home() {
 	const resetChat = () => {
 		setMessages([]);
 	};
-
-	const ref = useRef<HTMLDivElement | null>(null);
-	useEffect(() => {
-		if (!ref.current) return;
-
-		ref.current.scrollIntoView();
-	}, [data, messages]);
-
-	console.log("Messages", messages);
 
 	return (
 		<div className="flex justify-center items-center h-full w-full relative">
@@ -130,44 +123,13 @@ export default function Home() {
 					</div>
 				</form>
 			</div>
-			<div className="border-l border-muted-foreground/10 w-full h-full flex flex-col">
-				<div className="w-full h-full overflow-auto px-8 py-4 flex flex-col gap-4">
-					{messages.length === 0 ? (
-						<p className="text-muted-foreground italic">
-							No messages. Start chatting!
-						</p>
-					) : (
-						messages.map((message, index) => (
-							<MessageBubble key={index}>
-								{message.content}
-							</MessageBubble>
-						))
-					)}
-					{data.length > 0 && <MessageBubble>{data}</MessageBubble>}
-					<div ref={ref} />
-				</div>
-				<form
-					className="py-4 px-8 border-t border-muted-foreground/10"
-					onSubmit={handleSubmit}
-				>
-					<div className="flex gap-4">
-						<Input
-							placeholder="Message"
-							value={prompt}
-							onChange={(e) => setPrompt(e.target.value)}
-						/>
-						<Button disabled={isLoading}>Submit</Button>
-						<Button
-							type="button"
-							disabled={isLoading}
-							variant="outline"
-							onClick={resetChat}
-						>
-							Reset Chat
-						</Button>
-					</div>
-				</form>
-			</div>
+			<Chat
+				messages={messages}
+				streamedMessage={generatedMessage}
+				isLoading={isLoading}
+				onSubmit={handleSubmit}
+				onReset={resetChat}
+			/>
 		</div>
 	);
 }
