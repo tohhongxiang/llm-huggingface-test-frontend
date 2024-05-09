@@ -23,14 +23,12 @@ export default function RootLayout({
 			<TooltipProvider>
 				<body
 					className={cn(
-						"bg-background font-sans antialiased flex flex-col overflow-hidden",
+						"bg-background font-sans antialiased flex flex-col",
 						inter.className
 					)}
 				>
 					<Navbar />
-					<main className="flex-1 h-[calc(100vh-74px)]">
-						{children}
-					</main>
+					<main className="flex-1">{children}</main>
 				</body>
 			</TooltipProvider>
 		</html>
