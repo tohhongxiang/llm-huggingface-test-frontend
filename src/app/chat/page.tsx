@@ -110,7 +110,7 @@ export default function Home() {
 	});
 
 	return (
-		<div className="flex flex-col h-[calc(100vh-57px)] w-full relative overflow-hidden">
+		<div className="flex flex-col h-full w-full relative overflow-hidden">
 			<div className="border-b border-muted-foreground/30 py-2 px-4 flex justify-between items-center">
 				<h1 className="text-xl font-semibold">Chat Playground</h1>
 				<div className="flex">

@@ -1,10 +1,20 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Bot, Home, Mic, Image, Settings, ChevronRight } from "lucide-react";
+import {
+	Bot,
+	Home,
+	Mic,
+	Image,
+	Settings,
+	ChevronRight,
+	ChevronLeft,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Tooltip, TooltipTrigger, TooltipContent } from "./ui/tooltip";
+import { Button } from "./ui/button";
+import { useState } from "react";
 
 const links = [
 	{
@@ -37,8 +47,15 @@ const links = [
 export default function Navbar() {
 	const pathname = usePathname();
 
+	const [isOpen, setIsOpen] = useState(false);
+
 	return (
-		<nav className="flex flex-col h-full border-r border-muted-foreground/30">
+		<nav
+			className={cn(
+				"flex flex-col h-full border-r border-muted-foreground/30",
+				isOpen && "w-72"
+			)}
+		>
 			<div className="h-[65px] flex justify-center items-center border-b border-muted-foreground/30">
 				<Link href="/">
 					<p>
@@ -46,31 +63,66 @@ export default function Navbar() {
 					</p>
 				</Link>
 			</div>
-			<ul className="flex flex-col gap-4 p-2 h-full">
-				{links.map((link) => (
-					<Tooltip key={link.href}>
-						<TooltipTrigger asChild>
-							<Link href={link.href}>
-								<li
+			<ul className="flex flex-col items-center gap-4 h-full p-2">
+				{links.map((link) =>
+					isOpen ? (
+						<Link
+							href={link.href}
+							key={link.href}
+							className={cn(
+								"rounded p-2 hover:bg-muted-foreground/10 w-full",
+								link.href === pathname &&
+									"bg-muted-foreground/10"
+							)}
+						>
+							<li className="flex justify-start gap-2 items-center">
+								{link.icon}
+								<p
 									className={cn(
-										"rounded p-2 hover:bg-muted-foreground/10",
+										"text-sm",
 										link.href === pathname &&
-											"bg-muted-foreground/10"
+											"font-semibold"
 									)}
 								>
-									{link.icon}
-								</li>
-							</Link>
-						</TooltipTrigger>
-						<TooltipContent side="right" className="z-10">
-							<p>{link.label}</p>
-						</TooltipContent>
-					</Tooltip>
-				))}
+									{link.label}
+								</p>
+							</li>
+						</Link>
+					) : (
+						<Tooltip key={link.href}>
+							<TooltipTrigger asChild>
+								<Link href={link.href}>
+									<li
+										className={cn(
+											"rounded p-2 hover:bg-muted-foreground/10",
+											link.href === pathname &&
+												"bg-muted-foreground/10"
+										)}
+									>
+										{link.icon}
+									</li>
+								</Link>
+							</TooltipTrigger>
+							<TooltipContent side="right" className="z-10">
+								<p>{link.label}</p>
+							</TooltipContent>
+						</Tooltip>
+					)
+				)}
 			</ul>
-			<ul className="flex flex-col items-center mt-auto p-4 gap-y-4">
-				<li>
-					<ChevronRight className="size-6" />
+			<ul className="flex flex-col items-center mt-auto gap-y-4 p-2">
+				<li className="ml-auto">
+					<Button
+						variant="ghost"
+						size="icon"
+						onClick={() => setIsOpen((c) => !c)}
+					>
+						{isOpen ? (
+							<ChevronLeft className="size-6" />
+						) : (
+							<ChevronRight className="size-6" />
+						)}
+					</Button>
 				</li>
 			</ul>
 		</nav>
